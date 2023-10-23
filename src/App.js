@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import icon from "./images/icon-location.svg";
 import L from "leaflet";
@@ -10,9 +10,6 @@ import iconArrow from "./images/icon-arrow.svg";
 import MobileBgnImg from "./images/pattern-bg-mobile.png";
 import DesktopBgnImg from "./images/pattern-bg-desktop.png";
 
-//TODO: https://leafletjs.com/examples/quick-start/
-// https://react-leaflet.js.org/
-
 const App = () => {
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
@@ -21,6 +18,7 @@ const App = () => {
   const [location, setLocation] = useState("");
   const [timezone, setTimezone] = useState("");
   const [isp, setIsp] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     axios
@@ -29,7 +27,6 @@ const App = () => {
       )
       .then(function (response) {
         console.log(response.data);
-
         setLat(response.data.location.lat);
         setLng(response.data.location.lng);
         setSelectedIpAddress(response.data.ip);
@@ -57,26 +54,39 @@ const App = () => {
 
     setLat(null);
     setLng(null);
-    axios
-      .get(
-        `https://geo.ipify.org/api/v2/country,city?apiKey=${process.env.REACT_APP_API_KEY}&ipAddress=${ipAddress}`
-      )
-      .then(function (response) {
-        console.log(response.data, "mitä???");
 
-        setLat(response.data.location.lat);
-        setLng(response.data.location.lng);
-        setSelectedIpAddress(response.data.ip);
-        setLocation(
-          `${response.data.location.city},${response.data.location.country} ${response.data.location.postalCode} `
-        );
-        setTimezone(`UTC ${response.data.location.timezone}`);
-        setIsp(response.data.isp);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
+    let axiosAddress = "";
+
+    if (ipAddress.length > 0) {
+      if (/^[0-9.]*$/.test(ipAddress)) {
+        axiosAddress = `https://geo.ipify.org/api/v2/country,city?apiKey=${process.env.REACT_APP_API_KEY}&ipAddress=${ipAddress}`;
+      } else {
+        axiosAddress = `https://geo.ipify.org/api/v1?apiKey=${process.env.REACT_APP_API_KEY}&domain=${ipAddress}`;
+      }
+
+      axios
+        .get(axiosAddress)
+        .then(function (response) {
+          setLat(response.data.location.lat);
+          setLng(response.data.location.lng);
+          setSelectedIpAddress(response.data.ip);
+          setLocation(
+            `${response.data.location.city},${response.data.location.country} ${response.data.location.postalCode} `
+          );
+          setTimezone(`UTC ${response.data.location.timezone}`);
+          setIsp(response.data.isp);
+          setErrorMessage(null);
+        })
+        .catch(function (error) {
+          // handle error
+          console.log(error.message);
+          setErrorMessage(
+            "An error occurred. Check if you typed the ip address or domain correctly."
+          );
+        });
+    } else {
+      setErrorMessage("IP address or domain can not be empty");
+    }
   };
 
   return (
@@ -97,33 +107,42 @@ const App = () => {
             </button>
           </div>
 
-          <div className="modal-style">
-            <div style={{ padding: "10px" }}>
-              <label>IP ADDRESS</label>
-              <p>{selectedIpAdress}</p>
+          {errorMessage === null ? (
+            <div className="modal-style">
+              <div style={{ padding: "10px" }}>
+                <label>IP ADDRESS</label>
+                <p>{selectedIpAdress}</p>
+              </div>
+
+              <div className="vertical-line"></div>
+
+              <div style={{ padding: "10px" }}>
+                <label>LOCATION</label>
+                <p>{location}</p>
+              </div>
+
+              <div className="vertical-line"></div>
+
+              <div style={{ padding: "10px" }}>
+                <label>TIMEZONE</label>
+                <p>{timezone}</p>
+              </div>
+
+              <div className="vertical-line"></div>
+
+              <div style={{ padding: "10px" }}>
+                <label>ISP</label>
+                <p>{isp}</p>
+              </div>
             </div>
-
-            <div className="vertical-line"></div>
-
-            <div style={{ padding: "10px" }}>
-              <label>LOCATION</label>
-              <p>{location}</p>
+          ) : (
+            <div
+              className="modal-style"
+              style={{ color: "red", border: "2px solid red" }}
+            >
+              {errorMessage}
             </div>
-
-            <div className="vertical-line"></div>
-
-            <div style={{ padding: "10px" }}>
-              <label>TIMEZONE</label>
-              <p>{timezone}</p>
-            </div>
-
-            <div className="vertical-line"></div>
-
-            <div style={{ padding: "10px" }}>
-              <label>ISP</label>
-              <p>{isp}</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
       <div>
