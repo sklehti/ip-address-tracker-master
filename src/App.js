@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import icon from "./images/icon-location.svg";
 import L from "leaflet";
@@ -35,10 +35,14 @@ const App = () => {
         );
         setTimezone(`UTC ${response.data.location.timezone}`);
         setIsp(response.data.isp);
+        setErrorMessage(null);
       })
       .catch(function (error) {
         // handle error
         console.log(error);
+        setErrorMessage(
+          "An error occurred. Please refresh the page or enter your ip address or domain in the text box."
+        );
       });
   }, []);
 
@@ -81,7 +85,7 @@ const App = () => {
           // handle error
           console.log(error.message);
           setErrorMessage(
-            "An error occurred. Check if you typed the ip address or domain correctly."
+            "An error occurred. Enter your ip address or domain in the text box."
           );
         });
     } else {
@@ -160,11 +164,7 @@ const App = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            <Marker position={[lat, lng]}>
-              <Popup>
-                Location: <br /> {location}
-              </Popup>
-            </Marker>
+            <Marker position={[lat, lng]} />
           </MapContainer>
         ) : (
           <></>
