@@ -99,7 +99,7 @@ const App = () => {
         <div className="information-layout">
           <h1>IP Address Tracker</h1>
 
-          <div style={{ width: "100%" }}>
+          <div className="div-input">
             <input
               className="information-input"
               placeholder="Search for any IP address or domain"

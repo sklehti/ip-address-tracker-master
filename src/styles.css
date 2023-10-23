@@ -60,6 +60,10 @@ label {
   align-items: center;
 }
 
+.div-input {
+  width: 100%;
+}
+
 .information-input {
   position: relative;
   border-radius: 10px;
@@ -117,6 +121,21 @@ input::placeholder {
 
   .leaflet-container {
     height: 75vh;
+  }
+
+  .div-input {
+    width: auto;
+  }
+
+  .information-input {
+    border-radius: 10px 0 0 10px;
+    width: auto;
+  }
+
+  .information-btn {
+    position: relative;
+    border: 2px solid #000;
+    bottom: 0.2px;
   }
 
   .information-btn:hover {
